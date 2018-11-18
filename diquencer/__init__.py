@@ -1,1 +1,1 @@
-name = 'diquencer'
+from sequencer import Sequencer

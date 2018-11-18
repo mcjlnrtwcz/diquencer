@@ -1,0 +1,2 @@
+pycodestyle==2.4.0
+isort==4.3.4

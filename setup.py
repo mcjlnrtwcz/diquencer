@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="diquencer",
-    version="0.0.1",
+    version="0.1.0",
     author="Maciej Lenartowicz",
     author_email="mcjlnrtwcz@gmail.com",
     description="Simple MIDI sequencer library",
