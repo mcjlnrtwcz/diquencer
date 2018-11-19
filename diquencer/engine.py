@@ -2,8 +2,8 @@ import logging
 from threading import Event, Thread
 from time import perf_counter, sleep
 
-from midi_wrapper import MIDIWrapper
-from models import Position
+from .midi_wrapper import MIDIWrapper
+from .models import Position
 
 
 class SequencerEngine(Thread):

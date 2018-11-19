@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from models import Pattern, PatternSequence
+from .models import Pattern, PatternSequence
 
 
 class Sequence:

@@ -1,6 +1,7 @@
 import logging
 
-from engine import SequencerEngine
+from .engine import SequencerEngine
+from .sequence import Sequence
 
 
 class Sequencer:

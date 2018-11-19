@@ -1,1 +1,1 @@
-from sequencer import Sequencer
+from .sequencer import Sequencer
