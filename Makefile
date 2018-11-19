@@ -1,3 +1,5 @@
+.PHONY: tests
+
 env:
 	python3 -m venv .
 
@@ -9,3 +11,6 @@ style:
 
 sort:
 	isort -rc . -s ./lib
+
+tests:
+	python3 -m unittest
