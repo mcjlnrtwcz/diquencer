@@ -4,6 +4,10 @@ from .engine import SequencerEngine
 from .sequence import Sequence
 
 
+class SequencerException(Exception):
+    pass
+
+
 class Sequencer:
 
     def __init__(self, midi_out, sequence=None):
@@ -24,7 +28,7 @@ class Sequencer:
             self._engine.stop()
             self._engine.join()
         else:
-            logging.warning('Sequencer has already been stopped')
+            logging.warning('Sequencer has already been stopped.')
 
     def get_position(self):
         if self._engine and self._engine.is_alive():
@@ -39,7 +43,14 @@ class Sequencer:
         else:
             logging.debug('Selected MIDI port is already opened.')
 
+    def set_sequence(self, sequece):
+        if self._engine and self._engine.is_alive():
+            raise SequencerException('Cannot set sequence while running.')
+        self._sequence = sequece
+
     def load_sequence(self, sequence_data):
+        if self._engine and self._engine.is_alive():
+            raise SequencerException('Cannot load sequence while running.')
         self._sequence = Sequence(**sequence_data)
 
     @property
