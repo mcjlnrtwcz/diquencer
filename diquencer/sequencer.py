@@ -51,7 +51,7 @@ class Sequencer:
     def load_sequence(self, sequence_data):
         if self._engine and self._engine.is_alive():
             raise SequencerException('Cannot load sequence while running.')
-        self._sequence = Sequence(**sequence_data)
+        self._sequence = Sequence.from_raw_data(**sequence_data)
 
     @property
     def is_playing(self):

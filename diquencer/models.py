@@ -27,8 +27,9 @@ class Pattern:
 
 class PatternSequence:
 
-    def __init__(self, pattern, pulsestamp):
+    def __init__(self, pattern, repetitions, pulsestamp=0):
         self.pattern = pattern
+        self.repetitions = repetitions
         self.pulsestamp = pulsestamp
 
     def __str__(self):
