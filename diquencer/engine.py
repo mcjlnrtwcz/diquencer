@@ -3,7 +3,7 @@ from threading import Event, Thread
 from time import perf_counter, sleep
 
 from .midi_wrapper import MIDIWrapper, Mute
-from .models import Position
+from .models import Position, PatternEvent, MuteEvent
 
 
 class SequencerEngine(Thread):
@@ -29,11 +29,15 @@ class SequencerEngine(Thread):
     def run(self):
         logging.info(f'[{self.get_position()}] Sequencer started.')
 
-        # Set first pattern
-        event = self._sequence.get_event(self._pulsestamp)
-        self._midi.change_pattern(event.bank_id, event.pattern_id)
-        self._mute_tracks(event.mutes)
-        logging.info(f'[{self.get_position()}] Changing pattern to {event}.')
+        # Set initial pattern
+        pattern_event = self._sequence.get_event(self._pulsestamp)
+        pattern = pattern_event.pattern
+        self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
+        logging.info(f'[{self.get_position()}] Changing pattern to {pattern}.')
+        # Set initial mutes
+        mute_event = self._sequence.get_event(self._pulsestamp)
+        self._mute_tracks(mute_event.mutes)
+        logging.info(f'[{self.get_position()}] Muting tracks: {mute_event.mutes}.')
 
         # Warm-up
         for pulse in range(24 * 4):
@@ -48,10 +52,14 @@ class SequencerEngine(Thread):
             event = self._sequence.get_event(self._pulsestamp)
             if event == 'stop':
                 break
-            if event:
+            if isinstance(event, PatternEvent):
                 self._midi.change_pattern(event.bank_id, event.pattern_id)
                 logging.info(
                     f'[{self.get_position()}] Changing pattern to {event}.')
+            if isinstance(event, MuteEvent):
+                self._mute_tracks(event.mutes)
+                logging.info(
+                    f'[{self.get_position()}] Muting tracks: {event.mutes}.')
 
             self._pulsestamp += 1
 

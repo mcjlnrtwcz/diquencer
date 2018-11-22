@@ -20,20 +20,33 @@ class Pattern:
         self.pattern_id = pattern_id
         self.bank_id = bank_id
         self.length = length
-        self.mutes = mutes
 
     def __str__(self):
         return f'{self.bank_id}{self.pattern_id}'
 
 
-class PatternSequence:
+class Event:
 
-    def __init__(self, pattern, repetitions, pulsestamp=0):
-        self.pattern = pattern
-        self.repetitions = repetitions
+    def __init__(self, pulsestamp):
         self.pulsestamp = pulsestamp
 
+
+class MuteEvent(Event):
+
+    def __init__(self, pulsestamp, mutes):
+        super().__init__(pulsestamp)
+        self.mutes = mutes
+
+
+class PatternEvent(Event):
+
+    def __init__(self, pulsestamp, pattern, repetitions):
+        super().__init__(pulsestamp)
+        self.pattern = pattern
+        self.repetitions = repetitions
+
     def __str__(self):
+        # TODO: Move to Event?
         return '{}{} @ {}'.format(
             self.pattern.bank_id,
             self.pattern.pattern_id,
