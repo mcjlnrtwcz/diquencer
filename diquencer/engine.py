@@ -53,9 +53,10 @@ class SequencerEngine(Thread):
             if event == 'stop':
                 break
             if isinstance(event, PatternEvent):
-                self._midi.change_pattern(event.bank_id, event.pattern_id)
+                pattern = event.pattern
+                self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
                 logging.info(
-                    f'[{self.get_position()}] Changing pattern to {event}.')
+                    f'[{self.get_position()}] Changing pattern to {pattern}.')
             if isinstance(event, MuteEvent):
                 self._mute_tracks(event.mutes)
                 logging.info(

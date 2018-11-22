@@ -14,7 +14,7 @@ class Sequence:
 
         # Get pulsestamp of stop event
         if self._events:
-            last_event = self._events[-1]
+            last_event = self._events[-2]
             self._stop_event = last_event.pulsestamp
             self._stop_event += (
                 last_event.pattern.length
@@ -41,14 +41,14 @@ class Sequence:
                 )
 
             pattern_event = PatternEvent(
+                0 if index == 0 else last_event_pulses - 24,
                 pattern,
                 event['repetitions'],
-                last_event_pulses - 24
             )
             events.append(pattern_event)
 
             mute_event = MuteEvent(
-                last_event_pulses - 1,
+                0 if index == 0 else last_event_pulses - 1,
                 event['mutes']
             )
             events.append(mute_event)
