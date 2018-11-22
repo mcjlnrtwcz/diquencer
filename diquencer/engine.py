@@ -2,7 +2,7 @@ import logging
 from threading import Event, Thread
 from time import perf_counter, sleep
 
-from .midi_wrapper import MIDIWrapper
+from .midi_wrapper import MIDIWrapper, Mute
 from .models import Position
 
 
@@ -21,12 +21,18 @@ class SequencerEngine(Thread):
         while perf_counter() < start + self._pulse_duration:
             sleep(0.0001)
 
+    def _mute_tracks(self, mutes):
+        for track in range(1, 17):
+            state = Mute.ON if track in mutes else Mute.OFF
+            self._midi.mute(track, state)
+
     def run(self):
         logging.info(f'[{self.get_position()}] Sequencer started.')
 
         # Set first pattern
         event = self._sequence.get_event(self._pulsestamp)
         self._midi.change_pattern(event.bank_id, event.pattern_id)
+        self._mute_tracks(event.mutes)
         logging.info(f'[{self.get_position()}] Changing pattern to {event}.')
 
         # Warm-up

@@ -31,7 +31,8 @@ class Sequence:
             pattern = Pattern(
                 pattern_sequence['pattern'],
                 pattern_sequence['bank'],
-                pattern_sequence['length']
+                pattern_sequence['length'],
+                pattern_sequence['mutes']
             )
             if index != 0:
                 last_event_pulses += (

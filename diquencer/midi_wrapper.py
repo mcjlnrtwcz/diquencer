@@ -1,4 +1,10 @@
 import logging
+from enum import Enum
+
+
+class Mute(Enum):
+    ON = 127
+    OFF = 0
 
 
 class MIDIWrapper:
@@ -27,3 +33,6 @@ class MIDIWrapper:
 
     def clock(self):
         self._midi_out.send_message([0xF8])
+
+    def mute(self, track: int, mute_state: Mute) -> None:
+        self._midi_out.send_message((175 + track, 94, mute_state.value))
