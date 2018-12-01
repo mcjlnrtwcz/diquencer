@@ -1,16 +1,19 @@
 .PHONY: tests
 
-env:
-	python3 -m venv .
-
 install:
-	pip3 install -r requirements.txt
+	pipenv install
+
+uninstall:
+	pipenv --rm
+
+shell:
+	pipenv shell
 
 style:
-	pycodestyle . --exclude=./lib
+	pipenv run pycodestyle .
 
 sort:
-	isort -rc . -s ./lib
+	pipenv run isort -rc . -s ./lib
 
 tests:
 	python3 -m unittest

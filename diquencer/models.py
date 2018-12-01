@@ -31,7 +31,7 @@ class Event:
         self.pulsestamp = pulsestamp
 
     def __str__(self):
-        return '{} @ {}'.format(self.__class__.__name__, Position(self.pulsestamp))
+        return f'{self.__class__.__name__} @ {Position(self.pulsestamp)}'
 
 
 class MuteEvent(Event):

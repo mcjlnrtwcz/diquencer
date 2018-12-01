@@ -3,7 +3,7 @@ from threading import Event, Thread
 from time import perf_counter, sleep
 
 from .midi_wrapper import MIDIWrapper, Mute
-from .models import Position, PatternEvent, MuteEvent
+from .models import MuteEvent, PatternEvent, Position
 
 
 class SequencerEngine(Thread):
@@ -37,7 +37,9 @@ class SequencerEngine(Thread):
         # Set initial mutes
         mute_event = self._sequence.get_event(self._pulsestamp)
         self._mute_tracks(mute_event.mutes)
-        logging.info(f'[{self.get_position()}] Muting tracks: {mute_event.mutes}.')
+        logging.info(
+            f'[{self.get_position()}] Muting tracks: {mute_event.mutes}.'
+        )
 
         # Warm-up
         for pulse in range(24 * 4):

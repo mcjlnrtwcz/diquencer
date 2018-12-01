@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from .models import Pattern, Event, PatternEvent, MuteEvent
+from .models import Event, MuteEvent, Pattern, PatternEvent
 
 
 class Sequence:
