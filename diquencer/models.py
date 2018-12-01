@@ -30,6 +30,9 @@ class Event:
     def __init__(self, pulsestamp):
         self.pulsestamp = pulsestamp
 
+    def __str__(self):
+        return '{} @ {}'.format(self.__class__.__name__, Position(self.pulsestamp))
+
 
 class MuteEvent(Event):
 
@@ -44,11 +47,3 @@ class PatternEvent(Event):
         super().__init__(pulsestamp)
         self.pattern = pattern
         self.repetitions = repetitions
-
-    def __str__(self):
-        # TODO: Move to Event?
-        return '{}{} @ {}'.format(
-            self.pattern.bank_id,
-            self.pattern.pattern_id,
-            Position(self.pulsestamp)
-        )
