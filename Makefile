@@ -3,6 +3,9 @@
 install:
 	pipenv install
 
+install_dev:
+	pipenv install -d
+
 uninstall:
 	pipenv --rm
 
@@ -13,7 +16,7 @@ style:
 	pipenv run pycodestyle .
 
 sort:
-	pipenv run isort -rc . -s ./lib
+	pipenv run isort -rc .
 
 tests:
-	python3 -m unittest
+	pipenv run python3.6 -m unittest

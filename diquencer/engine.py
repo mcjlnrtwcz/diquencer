@@ -2,16 +2,16 @@ import logging
 from threading import Event, Thread
 from time import perf_counter, sleep
 
-from .midi_wrapper import MIDIWrapper, Mute
-from .models import MuteEvent, PatternEvent, Position
+from .midi_wrapper import Mute
+from .models import MuteEvent, PatternEvent, StopEvent, Position
 
 
 class SequencerEngine(Thread):
 
-    def __init__(self, sequence, midi_out):
+    def __init__(self, sequence, midi_wrapper):
         super().__init__()
         self._sequence = sequence
-        self._midi = MIDIWrapper(1, midi_out)
+        self._midi = midi_wrapper
         self._pulsestamp = 0
         self._stop_event = Event()
         self._pulse_duration = 60.0 / self._sequence.tempo / 24.0
@@ -27,8 +27,11 @@ class SequencerEngine(Thread):
             self._midi.mute(track, state)
 
     def run(self):
-        logging.info(f'[{self.get_position()}] Sequencer started.')
+        if not self._midi.is_port_open():
+            logging.warning('Cannot start engine. MIDI port is not open.')
+            return
 
+        logging.info(f'[{self.get_position()}] Sequencer started.')
         # Set initial pattern
         pattern_event = self._sequence.get_event(self._pulsestamp)
         pattern = pattern_event.pattern
@@ -52,7 +55,7 @@ class SequencerEngine(Thread):
             self._midi.clock()
 
             event = self._sequence.get_event(self._pulsestamp)
-            if event == 'stop':
+            if isinstance(event, StopEvent):
                 break
             if isinstance(event, PatternEvent):
                 pattern = event.pattern

@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from .models import Event, MuteEvent, Pattern, PatternEvent
+from .models import Event, MuteEvent, Pattern, PatternEvent, StopEvent
 
 
 class Sequence:
@@ -9,18 +9,19 @@ class Sequence:
     def __init__(self, tempo=120, events=[]):
         self.tempo = tempo
         self._events = events
-        self._events_blueprint = deepcopy(self._events)  # For reset
-        self._stop_event = 0
 
         # Get pulsestamp of stop event
         if self._events:
-            last_event = self._events[-2]
-            self._stop_event = last_event.pulsestamp
-            self._stop_event += (
-                last_event.pattern.length
+            last_event = self._events[-2]  # -1 is mutes event
+            stop_event = StopEvent(
+                last_event.pulsestamp
+                + last_event.pattern.length
                 * last_event.repetitions
                 * 24 * 4
             )
+            self._events.append(stop_event)
+
+        self._events_blueprint = deepcopy(self._events)  # For reset
 
     @classmethod
     def from_raw_data(cls, raw_data):
@@ -60,9 +61,6 @@ class Sequence:
             next_event = self._events[0]
             if next_event.pulsestamp == pulsestamp:
                 return self._events.pop(0)
-        else:
-            if pulsestamp == self._stop_event:
-                return 'stop'
 
     def reset(self):
         self._events = deepcopy(self._events_blueprint)

@@ -47,3 +47,6 @@ class PatternEvent(Event):
         super().__init__(pulsestamp)
         self.pattern = pattern
         self.repetitions = repetitions
+
+class StopEvent(Event):
+    pass
