@@ -2,6 +2,7 @@ import logging
 
 from .engine import SequencerEngine
 from .sequence import Sequence
+from .midi_wrapper import MIDIWrapper
 
 
 class SequencerException(Exception):
@@ -10,15 +11,14 @@ class SequencerException(Exception):
 
 class Sequencer:
 
-    def __init__(self, midi_out, sequence=None):
-        self._midi_out = midi_out
+    def __init__(self, sequence=None):
         self._sequence = sequence
+        self._midi = MIDIWrapper(1)
         self._engine = None
 
     def start(self):
-        # TODO: Is port open?
         if self._sequence:
-            self._engine = SequencerEngine(self._sequence, self._midi_out)
+            self._engine = SequencerEngine(self._sequence, self._midi)
             self._engine.start()
         else:
             logging.warning('Cannot start sequencer. Sequence is not set.')
@@ -34,14 +34,11 @@ class Sequencer:
         if self._engine and self._engine.is_alive():
             return str(self._engine.get_position())
 
-    def get_midi_outs(self):
-        return self._midi_out.get_ports()
+    def get_output_ports(self):
+        return self._midi.get_output_ports()
 
-    def set_midi_out(self, midi_out_id):
-        if not self._midi_out.is_port_open():
-            self._midi_out.open_port(midi_out_id)
-        else:
-            logging.debug('Selected MIDI port is already opened.')
+    def set_output_port(self, port: str) -> bool:
+        return self._midi.set_output_port(port)
 
     def set_sequence(self, sequece):
         if self._engine and self._engine.is_alive():
@@ -51,7 +48,7 @@ class Sequencer:
     def load_sequence(self, sequence_data):
         if self._engine and self._engine.is_alive():
             raise SequencerException('Cannot load sequence while running.')
-        self._sequence = Sequence.from_raw_data(**sequence_data)
+        self._sequence = Sequence.from_raw_data(sequence_data)
 
     @property
     def is_playing(self):
