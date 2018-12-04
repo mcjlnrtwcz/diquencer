@@ -13,8 +13,8 @@ class MIDIWrapper:
 
     BANKS = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
 
-    def __init__(self, channel):
-        self._channel = channel - 1
+    def __init__(self, channel=1):
+        self.channel = channel
         self._midi_out = rtmidi.MidiOut()
         self._ports = self._midi_out.get_ports()
 
@@ -43,7 +43,7 @@ class MIDIWrapper:
         except ValueError:
             logging.error(f'Cannot change pattern: bank {bank} is invalid.')
         self._midi_out.send_message([
-            0xC0 + self._channel,
+            0xC0 + self.channel - 1,
             (pattern - 1) + bank_number * 16
         ])
 

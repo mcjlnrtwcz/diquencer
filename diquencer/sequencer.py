@@ -11,9 +11,9 @@ class SequencerException(Exception):
 
 class Sequencer:
 
-    def __init__(self, sequence=None):
+    def __init__(self, sequence=None, midi_channel=1):
         self._sequence = sequence
-        self._midi = MIDIWrapper(1)
+        self._midi = MIDIWrapper(midi_channel)
         self._engine = None
 
     def start(self):
@@ -55,3 +55,6 @@ class Sequencer:
         if self._engine:
             return self._engine.is_alive()
         return False
+
+    def set_midi_channel(self, channel: int) -> None:
+        self._midi.channel = channel
