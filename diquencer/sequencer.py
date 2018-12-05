@@ -63,3 +63,6 @@ class Sequencer:
 
     def set_midi_channel(self, channel: int) -> None:
         self._midi.channel = channel
+
+    def wait_until_finished(self):
+        self._engine.join()

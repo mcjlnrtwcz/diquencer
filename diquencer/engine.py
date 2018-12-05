@@ -23,9 +23,9 @@ class SequencerEngine(Thread):
         while perf_counter() < start + self._pulse_duration:
             sleep(0.0001)
 
-    def _mute_tracks(self, mutes):
+    def _play_tracks(self, playing_tracks):
         for track in range(1, 17):
-            state = Mute.ON if track in mutes else Mute.OFF
+            state = Mute.OFF if track in playing_tracks else Mute.ON
             self._midi.mute(track, state)
 
     def run(self):
@@ -39,11 +39,11 @@ class SequencerEngine(Thread):
         pattern = pattern_event.pattern
         self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
         logging.info(f'[{self.get_position()}] Changing pattern to {pattern}.')
-        # Set initial mutes
+        # Set initial playing tracks
         mute_event = self._sequence.get_event(self._pulsestamp)
-        self._mute_tracks(mute_event.mutes)
+        self._play_tracks(mute_event.playing_tracks)
         logging.info(
-            f'[{self.get_position()}] Muting tracks: {mute_event.mutes}.'
+            f'[{self.get_position()}] Playing tracks: {mute_event.playing_tracks}.'
         )
 
         # Warm-up
@@ -65,9 +65,9 @@ class SequencerEngine(Thread):
                 logging.info(
                     f'[{self.get_position()}] Changing pattern to {pattern}.')
             if isinstance(event, MuteEvent):
-                self._mute_tracks(event.mutes)
+                self._play_tracks(event.playing_tracks)
                 logging.info(
-                    f'[{self.get_position()}] Muting tracks: {event.mutes}.')
+                    f'[{self.get_position()}] Muting tracks: {event.playing_tracks}.')
 
             self._pulsestamp += 1
 

@@ -12,9 +12,9 @@ class SequenceEvent:
 
 class MuteEvent(SequenceEvent):
 
-    def __init__(self, pulsestamp, mutes):
+    def __init__(self, pulsestamp, playing_tracks):
         super().__init__(pulsestamp)
-        self.mutes = mutes
+        self.playing_tracks = playing_tracks
 
 
 class PatternEvent(SequenceEvent):
