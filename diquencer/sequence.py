@@ -1,6 +1,7 @@
 from copy import deepcopy
 
-from .models import Event, MuteEvent, Pattern, PatternEvent, StopEvent
+from .events import MuteEvent, PatternEvent, SequenceEvent, StopEvent
+from .models import Pattern
 
 
 class Sequence:
@@ -56,7 +57,7 @@ class Sequence:
 
         return cls(raw_data['tempo'], events)
 
-    def get_event(self, pulsestamp: int) -> Event:
+    def get_event(self, pulsestamp: int) -> SequenceEvent:
         if len(self._events) > 0:
             next_event = self._events[0]
             if next_event.pulsestamp == pulsestamp:

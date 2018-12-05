@@ -23,30 +23,3 @@ class Pattern:
 
     def __str__(self):
         return f'{self.bank_id}{self.pattern_id}'
-
-
-class Event:
-
-    def __init__(self, pulsestamp):
-        self.pulsestamp = pulsestamp
-
-    def __str__(self):
-        return f'{self.__class__.__name__} @ {Position(self.pulsestamp)}'
-
-
-class MuteEvent(Event):
-
-    def __init__(self, pulsestamp, mutes):
-        super().__init__(pulsestamp)
-        self.mutes = mutes
-
-
-class PatternEvent(Event):
-
-    def __init__(self, pulsestamp, pattern, repetitions):
-        super().__init__(pulsestamp)
-        self.pattern = pattern
-        self.repetitions = repetitions
-
-class StopEvent(Event):
-    pass

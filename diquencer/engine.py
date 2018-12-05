@@ -2,16 +2,18 @@ import logging
 from threading import Event, Thread
 from time import perf_counter, sleep
 
+from .events import MuteEvent, PatternEvent, StopEvent
 from .midi_wrapper import Mute
-from .models import MuteEvent, PatternEvent, StopEvent, Position
+from .models import Position
 
 
 class SequencerEngine(Thread):
 
-    def __init__(self, sequence, midi_wrapper):
+    def __init__(self, sequence, midi_wrapper, stop_callback=None):
         super().__init__()
         self._sequence = sequence
         self._midi = midi_wrapper
+        self._stop_callback = stop_callback
         self._pulsestamp = 0
         self._stop_event = Event()
         self._pulse_duration = 60.0 / self._sequence.tempo / 24.0
@@ -73,6 +75,9 @@ class SequencerEngine(Thread):
         logging.info(f'[{self.get_position()}] Sequencer stopped.')
 
         self._sequence.reset()
+
+        if self._stop_callback:
+            self._stop_callback()
 
     def stop(self):
         self._stop_event.set()
