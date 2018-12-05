@@ -16,7 +16,7 @@ class Position:
 
 class Pattern:
 
-    def __init__(self, pattern_id, bank_id, length, mutes=[]):
+    def __init__(self, pattern_id, bank_id, length):
         self.pattern_id = pattern_id
         self.bank_id = bank_id
         self.length = length

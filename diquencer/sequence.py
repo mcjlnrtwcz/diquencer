@@ -13,7 +13,7 @@ class Sequence:
 
         # Get pulsestamp of stop event
         if self._events:
-            last_event = self._events[-2]  # -1 is mutes event
+            last_event = self._events[-2]  # -1 is MuteEvent
             stop_event = StopEvent(
                 last_event.pulsestamp
                 + last_event.pattern.length
@@ -51,7 +51,7 @@ class Sequence:
 
             mute_event = MuteEvent(
                 0 if index == 0 else last_event_pulses - 1,
-                event['mutes']
+                event['playing_tracks']
             )
             events.append(mute_event)
 
