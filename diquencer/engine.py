@@ -9,11 +9,16 @@ from .models import Position
 
 class SequencerEngine(Thread):
 
-    def __init__(self, sequence, midi_wrapper, stop_callback=None):
+    def __init__(
+            self,
+            sequence,
+            midi_wrapper,
+            start_callback=None
+    ):
         super().__init__()
         self._sequence = sequence
         self._midi = midi_wrapper
-        self._stop_callback = stop_callback
+        self._stat_callback = start_callback
         self._pulsestamp = 0
         self._stop_event = Event()
         self._pulse_duration = 60.0 / self._sequence.tempo / 24.0
@@ -43,7 +48,8 @@ class SequencerEngine(Thread):
         mute_event = self._sequence.get_event(self._pulsestamp)
         self._play_tracks(mute_event.playing_tracks)
         logging.info(
-            f'[{self.get_position()}] Playing tracks: {mute_event.playing_tracks}.'
+            f'[{self.get_position()}] Playing tracks: '
+            f'{mute_event.playing_tracks}.'
         )
 
         # Warm-up
@@ -51,10 +57,11 @@ class SequencerEngine(Thread):
             self._midi.clock()
             self._pulse()
 
+        self._stat_callback()
         self._midi.start()
         while not self._stop_event.is_set():
-            self._pulse()
             self._midi.clock()
+            self._pulse()
 
             event = self._sequence.get_event(self._pulsestamp)
             if isinstance(event, StopEvent):
@@ -67,7 +74,8 @@ class SequencerEngine(Thread):
             if isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
                 logging.info(
-                    f'[{self.get_position()}] Muting tracks: {event.playing_tracks}.')
+                    f'[{self.get_position()}] Playing tracks: '
+                    f'{event.playing_tracks}.')
 
             self._pulsestamp += 1
 
@@ -75,9 +83,6 @@ class SequencerEngine(Thread):
         logging.info(f'[{self.get_position()}] Sequencer stopped.')
 
         self._sequence.reset()
-
-        if self._stop_callback:
-            self._stop_callback()
 
     def stop(self):
         self._stop_event.set()
