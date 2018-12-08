@@ -11,20 +11,27 @@ class SequencerException(Exception):
 
 class Sequencer:
 
-    def __init__(self, sequence=None, midi_channel=1, stop_callback=None):
+    def __init__(
+            self,
+            sequence=None,
+            midi_channel=1,
+            start_callback=None,
+    ):
         self._sequence = sequence
         self._midi = MIDIWrapper(midi_channel)
+        self._start_callback = start_callback
         self._engine = None
-        self._stop_callback = stop_callback
 
-    def start(self):
+    def start(self, blocking=False):
         if self._sequence:
             self._engine = SequencerEngine(
                 self._sequence,
                 self._midi,
-                self._stop_callback
+                self._start_callback
             )
             self._engine.start()
+            if blocking:
+                self._engine.join()
         else:
             logging.warning('Cannot start sequencer. Sequence is not set.')
 
@@ -63,6 +70,3 @@ class Sequencer:
 
     def set_midi_channel(self, channel: int) -> None:
         self._midi.channel = channel
-
-    def wait_until_finished(self):
-        self._engine.join()
