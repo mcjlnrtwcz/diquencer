@@ -2,6 +2,8 @@ import logging
 from enum import Enum
 
 import rtmidi
+from rtmidi.midiconstants import (PROGRAM_CHANGE, SONG_START, SONG_STOP,
+                                  TIMING_CLOCK)
 
 
 class Mute(Enum):
@@ -43,18 +45,18 @@ class MIDIWrapper:
         except ValueError:
             logging.error(f'Cannot change pattern: bank {bank} is invalid.')
         self._midi_out.send_message([
-            0xC0 + self.channel - 1,
+            PROGRAM_CHANGE + self.channel - 1,
             (pattern - 1) + bank_number * 16
         ])
 
     def start(self):
-        self._midi_out.send_message([0xFA])
+        self._midi_out.send_message([SONG_START])
 
     def stop(self):
-        self._midi_out.send_message([0xFC])
+        self._midi_out.send_message([SONG_STOP])
 
     def clock(self):
-        self._midi_out.send_message([0xF8])
+        self._midi_out.send_message([TIMING_CLOCK])
 
     def mute(self, track: int, mute_state: Mute) -> None:
         self._midi_out.send_message((175 + track, 94, mute_state.value))
