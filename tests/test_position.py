@@ -3,7 +3,7 @@ from unittest import TestCase
 from diquencer.models import Position
 
 
-class TestCounter(TestCase):
+class TestPosition(TestCase):
 
     def test_pulses_below(self):
         position = Position(47)

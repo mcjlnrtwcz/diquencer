@@ -1,7 +1,8 @@
 from copy import deepcopy
+from typing import Union
 
 from .events import MuteEvent, PatternEvent, SequenceEvent, StopEvent
-from .models import Pattern
+from .models import Pattern, Position
 
 
 class Sequence:
@@ -31,6 +32,7 @@ class Sequence:
 
         for index, event in enumerate(raw_data['sequence']):
             pattern = Pattern(
+                event['name'],
                 event['pattern'],
                 event['bank'],
                 event['length'],
@@ -57,11 +59,21 @@ class Sequence:
 
         return cls(raw_data['tempo'], events)
 
-    def get_event(self, pulsestamp: int) -> SequenceEvent:
-        if len(self._events) > 0:
-            next_event = self._events[0]
-            if next_event.pulsestamp == pulsestamp:
-                return self._events.pop(0)
+    @property
+    def next_pattern(self) -> Union[Pattern, None]:
+        pattern_it = filter(
+            lambda event: isinstance(event, PatternEvent), self._events
+        )
+        try :
+            pattern_event = next(pattern_it)
+            return pattern_event.pattern
+        except StopIteration:
+            return None
+
+
+    def get_event(self, pulsestamp: int) -> Union[SequenceEvent, None]:
+        if self._events and self._events[0].pulsestamp == pulsestamp:
+            return self._events.pop(0)
 
     def reset(self):
         self._events = deepcopy(self._events_blueprint)

@@ -16,10 +16,11 @@ class Position:
 
 class Pattern:
 
-    def __init__(self, pattern_id, bank_id, length):
+    def __init__(self, name, pattern_id, bank_id, length):
+        self.name = name
         self.pattern_id = pattern_id
         self.bank_id = bank_id
         self.length = length
 
     def __str__(self):
-        return f'{self.bank_id}{self.pattern_id}'
+        return f'[{self.bank_id}{str(self.pattern_id).zfill(2)}] {self.name}'

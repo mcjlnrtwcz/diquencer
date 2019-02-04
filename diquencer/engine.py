@@ -9,19 +9,16 @@ from .models import Position
 
 class SequencerEngine(Thread):
 
-    def __init__(
-            self,
-            sequence,
-            midi_wrapper,
-            start_callback=None
-    ):
+    def __init__(self, sequence, midi_wrapper, start_callback=None):
         super().__init__()
         self._sequence = sequence
         self._midi = midi_wrapper
-        self._stat_callback = start_callback
+        self._start_callback = start_callback
         self._pulsestamp = 0
         self._stop_event = Event()
         self._pulse_duration = 60.0 / self._sequence.tempo / 24.0
+        self.current_pattern = None
+        self.next_pattern = None
 
     def _pulse(self):
         start = perf_counter()
@@ -39,11 +36,16 @@ class SequencerEngine(Thread):
             return
 
         logging.info(f'[{self.get_position()}] Sequencer started.')
+
         # Set initial pattern
         pattern_event = self._sequence.get_event(self._pulsestamp)
         pattern = pattern_event.pattern
         self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
         logging.info(f'[{self.get_position()}] Changing pattern to {pattern}.')
+
+        self.current_pattern = pattern
+        self.next_pattern = self._sequence.next_pattern
+
         # Set initial playing tracks
         mute_event = self._sequence.get_event(self._pulsestamp)
         self._play_tracks(mute_event.playing_tracks)
@@ -57,7 +59,8 @@ class SequencerEngine(Thread):
             self._midi.clock()
             self._pulse()
 
-        self._stat_callback()
+        if self._start_callback:
+            self._start_callback()
         self._midi.start()
         while not self._stop_event.is_set():
             self._midi.clock()
@@ -65,12 +68,15 @@ class SequencerEngine(Thread):
 
             event = self._sequence.get_event(self._pulsestamp)
             if isinstance(event, StopEvent):
+                self.current_pattern = None
                 break
             if isinstance(event, PatternEvent):
                 pattern = event.pattern
                 self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
                 logging.info(
                     f'[{self.get_position()}] Changing pattern to {pattern}.')
+                self.current_pattern = pattern
+                self.next_pattern = self._sequence.next_pattern
             if isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
                 logging.info(
