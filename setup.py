@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="diquencer",
-    version="0.2.1",
+    version="0.4.0",
     author="Maciej Lenartowicz",
     author_email="mcjlnrtwcz@gmail.com",
     description="Simple MIDI sequencer library",
@@ -19,6 +19,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'python-rtmidi~=1.1.2'
+        'python-rtmidi~=1.2.1'
     ]
 )
