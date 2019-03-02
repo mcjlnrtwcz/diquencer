@@ -1,12 +1,11 @@
 from copy import deepcopy
-from typing import Union
+from typing import List, Union
 
 from .events import MuteEvent, PatternEvent, SequenceEvent, StopEvent
 from .models import Pattern, Position
 
 
 class Sequence:
-    # TODO: next() returns a Pattern (use repetitions from PatternEvent)
 
     def __init__(self, tempo=120, events=[]):
         self.tempo = tempo
@@ -26,11 +25,12 @@ class Sequence:
         self._events_blueprint = deepcopy(self._events)  # For reset
 
     @classmethod
-    def from_raw_data(cls, raw_data):
+    def from_raw_data(cls, raw_data, start_pattern_idx=0):
         events = []
         last_event_pulses = 0
+        patterns = raw_data['sequence'][start_pattern_idx:]
 
-        for index, event in enumerate(raw_data['sequence']):
+        for index, event in enumerate(patterns):
             pattern = Pattern(
                 event['name'],
                 event['pattern'],
@@ -60,20 +60,32 @@ class Sequence:
         return cls(raw_data['tempo'], events)
 
     @property
+    def patterns(self) -> List[Pattern]:
+        return [
+            event.pattern
+            for event in self._events
+            if isinstance(event, PatternEvent)
+        ]
+
+    @property
     def next_pattern(self) -> Union[Pattern, None]:
         pattern_it = filter(
             lambda event: isinstance(event, PatternEvent), self._events
         )
-        try :
+        try:
             pattern_event = next(pattern_it)
             return pattern_event.pattern
         except StopIteration:
             return None
 
-
-    def get_event(self, pulsestamp: int) -> Union[SequenceEvent, None]:
+    def consume_event(self, pulsestamp: int) -> Union[SequenceEvent, None]:
+        """
+        Return first available event given that it maches passed pulsestamp.
+        The event is removed from the queue.
+        """
         if self._events and self._events[0].pulsestamp == pulsestamp:
             return self._events.pop(0)
+        return None
 
     def reset(self):
         self._events = deepcopy(self._events_blueprint)

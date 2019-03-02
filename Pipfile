@@ -3,12 +3,12 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[requires]
+python_version = "3.6"
+
+[packages]
+python-rtmidi = "~=1.2.1"
+
 [dev-packages]
 pycodestyle = "~=2.4.0"
 isort = "~=4.3.4"
-
-[packages]
-python-rtmidi = "~=1.1.2"
-
-[requires]
-python_version = "3.6"
