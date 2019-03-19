@@ -8,7 +8,6 @@ from .models import Position
 
 
 class SequencerEngine(Thread):
-
     def __init__(self, sequence, midi_wrapper, start_callback=None):
         super().__init__()
         self._sequence = sequence
@@ -26,16 +25,16 @@ class SequencerEngine(Thread):
 
     def run(self):
         if not self._midi.has_open_port:
-            logging.warning('Cannot start engine. MIDI port is not open.')
+            logging.warning("Cannot start engine. MIDI port is not open.")
             return
 
-        logging.info(f'[{self.position}] Sequencer started.')
+        logging.info(f"[{self.position}] Sequencer started.")
 
         # Set initial pattern
         pattern_event = self._sequence.consume_event(self._pulsestamp)
         pattern = pattern_event.pattern
         self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
-        logging.info(f'[{self.position}] Changing pattern to {pattern}.')
+        logging.info(f"[{self.position}] Changing pattern to {pattern}.")
 
         self.current_pattern = pattern
         self.next_pattern = self._sequence.next_pattern
@@ -44,8 +43,7 @@ class SequencerEngine(Thread):
         mute_event = self._sequence.consume_event(self._pulsestamp)
         self._play_tracks(mute_event.playing_tracks)
         logging.info(
-            f'[{self.position}] Playing tracks: '
-            f'{mute_event.playing_tracks}.'
+            f"[{self.position}] Playing tracks: " f"{mute_event.playing_tracks}."
         )
 
         # Warm-up
@@ -67,20 +65,19 @@ class SequencerEngine(Thread):
             if isinstance(event, PatternEvent):
                 pattern = event.pattern
                 self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
-                logging.info(
-                    f'[{self.position}] Changing pattern to {pattern}.')
+                logging.info(f"[{self.position}] Changing pattern to {pattern}.")
                 self.current_pattern = pattern
                 self.next_pattern = self._sequence.next_pattern
             if isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
                 logging.info(
-                    f'[{self.position}] Playing tracks: '
-                    f'{event.playing_tracks}.')
+                    f"[{self.position}] Playing tracks: " f"{event.playing_tracks}."
+                )
 
             self._pulsestamp += 1
 
         self._midi.stop()
-        logging.info(f'[{self.position}] Sequencer stopped.')
+        logging.info(f"[{self.position}] Sequencer stopped.")
 
         self._sequence.reset()
 

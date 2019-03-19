@@ -4,7 +4,6 @@ from diquencer.models import Position
 
 
 class TestPosition(TestCase):
-
     def test_pulses_below(self):
         position = Position(47)
         self.assertEqual(position.pulses, 23)

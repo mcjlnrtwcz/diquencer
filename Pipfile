@@ -7,8 +7,10 @@ verify_ssl = true
 python_version = "3.6"
 
 [packages]
-python-rtmidi = "~=1.2.1"
+python-rtmidi = "==1.2.1"
 
 [dev-packages]
-pycodestyle = "~=2.4.0"
-isort = "~=4.3.4"
+black = "==18.9b0"
+flake8 = "==3.7.7"
+isort = "==4.3.4"
+mypy = "==0.670"

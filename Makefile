@@ -12,11 +12,14 @@ uninstall:
 shell:
 	pipenv shell
 
-style:
-	pipenv run pycodestyle .
+format:
+	pipenv run black .
 
 sort:
 	pipenv run isort -rc .
 
-tests:
-	pipenv run python3.6 -m unittest
+lint:
+	pipenv run flake8 .
+
+mypy:
+	pipenv run mypy diquencer --config-file tox.ini

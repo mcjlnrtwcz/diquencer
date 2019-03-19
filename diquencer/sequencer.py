@@ -12,7 +12,6 @@ class SequencerException(Exception):
 
 
 class Sequencer:
-
     def __init__(self, sequence=None, midi_channel=1, start_callback=None):
         self._sequence = sequence
         self._sequence_data = None
@@ -48,6 +47,7 @@ class Sequencer:
     def position(self) -> str:
         if self._engine and self._engine.is_alive():
             return str(self._engine.position)
+        return ""
 
     @property
     def output_ports(self):
@@ -61,7 +61,7 @@ class Sequencer:
 
     def set_sequence(self, sequece: Sequence):
         if self._engine and self._engine.is_alive():
-            raise SequencerException('Cannot set sequence while running.')
+            raise SequencerException("Cannot set sequence while running.")
         self._sequence = sequece
 
     def load_sequence(self, sequence_data):
@@ -74,22 +74,20 @@ class Sequencer:
     def start(self, blocking=False):
         if self._sequence:
             self._engine = SequencerEngine(
-                self._sequence,
-                self._midi,
-                self._start_callback
+                self._sequence, self._midi, self._start_callback
             )
             self._engine.start()
             if blocking:
                 self._engine.join()
         else:
-            logging.warning('Cannot start sequencer. Sequence is not set.')
+            logging.warning("Cannot start sequencer. Sequence is not set.")
 
     def stop(self):
         if self._engine.is_alive():
             self._engine.stop()
             self._engine.join()
         else:
-            logging.warning('Sequencer has already been stopped.')
+            logging.warning("Sequencer has already been stopped.")
 
     def _initialize_sequence(self, sequence, start_pattern_idx):
         """
@@ -97,5 +95,5 @@ class Sequencer:
         with specified pattern.
         """
         if self._engine and self._engine.is_alive():
-            raise SequencerException('Cannot load sequence while running.')
+            raise SequencerException("Cannot load sequence while running.")
         self._sequence = Sequence.from_raw_data(sequence, start_pattern_idx)
