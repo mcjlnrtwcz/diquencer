@@ -24,31 +24,35 @@ class Sequencer:
 
     @property
     def is_playing(self) -> bool:
-        if self._engine:
+        try:
             return self._engine.is_alive()
-        return False
+        except AttributeError:
+            return False
 
     @property
     def patterns(self) -> List[Pattern]:
-        if self._sequence:
+        try:
             return self._sequence.patterns
-        return []
+        except AttributeError:
+            return []
 
     @property
     def current_pattern(self) -> Union[Pattern, None]:
-        if self._engine:
+        try:
             return self._engine.current_pattern
-        return None
+        except AttributeError:
+            return None
 
     @property
     def next_pattern(self) -> Union[Pattern, None]:
-        if self._engine:
+        try:
             return self._engine.next_pattern
-        return None
+        except AttributeError:
+            return None
 
     @property
     def position(self) -> str:
-        if self._engine and self._engine.is_alive():
+        if self._is_engine_running():
             return str(self._engine.position)
         return ""
 
@@ -66,7 +70,7 @@ class Sequencer:
         self._midi.channel = channel
 
     def set_sequence(self, sequece: Sequence):
-        if self._engine and self._engine.is_alive():
+        if self._is_engine_running():
             raise SequencerTransportError(
                 "Cannot set sequence while sequencer is running."
             )
@@ -74,16 +78,16 @@ class Sequencer:
 
     def load_sequence(self, sequence_data):
         """
-        Load sequence form raw data (i.e. dict). Raise SequencerTransportError if sequencer
-        is working.
+        Load sequence form raw data (i.e. dict). Raise SequencerTransportError if
+        sequencer is working.
         """
         self._sequence_data = sequence_data
         self._initialize_sequence(sequence_data)
 
     def set_start_pattern(self, start_pattern_idx: int):
         """
-        Set start pattern of current sequence. Raise SequencerTransportError if sequencer
-        is working.
+        Set start pattern of current sequence. Raise SequencerTransportError if
+        sequencer is working.
         """
         self._initialize_sequence(self._sequence_data, start_pattern_idx)
 
@@ -106,17 +110,23 @@ class Sequencer:
             self._engine.join()
 
     def stop(self):
-        if not self._engine.is_alive():
+        if not self._is_engine_running():
             raise SequencerTransportError("Sequencer has already been stopped.")
 
         self._engine.stop()
         self._engine.join()
+
+    def _is_engine_running(self):
+        try:
+            return self._engine.is_alive()
+        except AttributeError:
+            return False
 
     def _initialize_sequence(self, sequence, start_pattern_idx=0):
         """
         Create and store new sequence based on raw data. The sequence begins
         with specified pattern.
         """
-        if self._engine and self._engine.is_alive():
+        if self._is_engine_running():
             raise SequencerTransportError("Cannot load sequence while running.")
         self._sequence = Sequence.from_raw_data(sequence, start_pattern_idx)
