@@ -3,9 +3,9 @@ from threading import Event, Thread
 from time import perf_counter, sleep
 
 from .events import MuteEvent, PatternEvent, StopEvent
+from .exceptions import ChangePatternError, InvalidBank
 from .midi_wrapper import Mute
 from .models import Position
-from .exceptions import InvalidBank
 
 
 class SequencerEngine(Thread):
@@ -31,19 +31,10 @@ class SequencerEngine(Thread):
         logging.info(f"[{self.position}] Sequencer started.")
 
         # Set initial pattern
-        pattern_event = self._sequence.consume_event(self._pulsestamp)
-        pattern = pattern_event.pattern
         try:
-            self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
-        except InvalidBank as error:
-            self._sequence.reset()
-            logging.critical("Aborting sequencer engine.", exc_info=True)
-            self._error_callback(error)
+            self._change_pattern(self._sequence.consume_event(self._pulsestamp))
+        except ChangePatternError:
             return
-        logging.info(f"[{self.position}] Changing pattern to {pattern}.")
-
-        self.current_pattern = pattern
-        self.next_pattern = self._sequence.next_pattern
 
         # Set initial playing tracks
         mute_event = self._sequence.consume_event(self._pulsestamp)
@@ -52,9 +43,8 @@ class SequencerEngine(Thread):
             f"[{self.position}] Playing tracks: " f"{mute_event.playing_tracks}."
         )
 
-        # Warm-up
+        # Warm-up (4 quarter notes)
         for _ in range(24 * 4):
-            self._midi.clock()
             self._pulse()
 
         # Start
@@ -64,35 +54,21 @@ class SequencerEngine(Thread):
 
         # Consume events from queue
         while not self._stop_event.is_set():
-            self._midi.clock()
             self._pulse()
-
             event = self._sequence.consume_event(self._pulsestamp)
-
             if isinstance(event, StopEvent):
                 self.current_pattern = None
                 break
-
-            if isinstance(event, PatternEvent):
-                pattern = event.pattern
+            elif isinstance(event, PatternEvent):
                 try:
-                    self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
-                except InvalidBank as error:
-                    self._midi.stop()
-                    self._sequence.reset()
-                    logging.critical("Aborting sequencer engine.", exc_info=True)
-                    self._error_callback(error)
+                    self._change_pattern(event)
+                except ChangePatternError:
                     return
-                logging.info(f"[{self.position}] Changing pattern to {pattern}.")
-                self.current_pattern = pattern
-                self.next_pattern = self._sequence.next_pattern
-
-            if isinstance(event, MuteEvent):
+            elif isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
                 logging.info(
                     f"[{self.position}] Playing tracks: " f"{event.playing_tracks}."
                 )
-
             self._pulsestamp += 1
 
         self._midi.stop()
@@ -104,6 +80,7 @@ class SequencerEngine(Thread):
         self._stop_event.set()
 
     def _pulse(self):
+        self._midi.tick()
         start = perf_counter()
         while perf_counter() < start + self._pulse_duration:
             sleep(0.0001)
@@ -112,3 +89,21 @@ class SequencerEngine(Thread):
         for track in range(1, 17):
             state = Mute.OFF if track in playing_tracks else Mute.ON
             self._midi.mute(track, state)
+
+    def _cleanup_after_abort(self, error):
+        self._midi.stop()
+        self._sequence.reset()
+        logging.critical("Aborting sequencer engine.", exc_info=True)
+        if self._error_callback:
+            self._error_callback(error)
+
+    def _change_pattern(self, event):
+        pattern = event.pattern
+        try:
+            self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
+        except InvalidBank as error:
+            self._cleanup_after_abort(error)
+            raise ChangePatternError()
+        logging.info(f"[{self.position}] Changing pattern to {pattern}.")
+        self.current_pattern = pattern
+        self.next_pattern = self._sequence.next_pattern

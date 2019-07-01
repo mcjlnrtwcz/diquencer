@@ -20,3 +20,9 @@ class InvalidBank(DiquencerException):
     """
     Invalid pattern bank was selected.
     """
+
+
+class ChangePatternError(DiquencerException):
+    """
+    Pattern cannot be changed.
+    """

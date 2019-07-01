@@ -3,7 +3,7 @@ from enum import Enum
 import rtmidi
 from rtmidi.midiconstants import PROGRAM_CHANGE, SONG_START, SONG_STOP, TIMING_CLOCK
 
-from .exceptions import MIDIOutputError, InvalidBank
+from .exceptions import InvalidBank, MIDIOutputError
 
 
 class Mute(Enum):
@@ -57,7 +57,7 @@ class MIDIWrapper:
     def stop(self):
         self._midi_out.send_message([SONG_STOP])
 
-    def clock(self):
+    def tick(self):
         self._midi_out.send_message([TIMING_CLOCK])
 
     def mute(self, track: int, mute_state: Mute) -> None:
