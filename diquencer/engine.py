@@ -34,6 +34,11 @@ class SequencerEngine(Thread):
         if self._error_callback:
             self._error_callback(error)
 
+    def _change_pattern(self, pattern):
+        logging.info(f"[{self.position}] Changing pattern to {pattern}.")
+        self.current_pattern = pattern
+        self.next_pattern = self._sequence.next_pattern
+
     def run(self):
         logging.info(f"[{self.position}] Sequencer started.")
 
@@ -45,10 +50,7 @@ class SequencerEngine(Thread):
         except InvalidBank as error:
             self._cleanup_after_abort(error)
             return
-        logging.info(f"[{self.position}] Changing pattern to {pattern}.")
-
-        self.current_pattern = pattern
-        self.next_pattern = self._sequence.next_pattern
+        self._change_pattern(pattern)
 
         # Set initial playing tracks
         mute_event = self._sequence.consume_event(self._pulsestamp)
@@ -85,9 +87,7 @@ class SequencerEngine(Thread):
                 except InvalidBank as error:
                     self._cleanup_after_abort(error)
                     return
-                logging.info(f"[{self.position}] Changing pattern to {pattern}.")
-                self.current_pattern = pattern
-                self.next_pattern = self._sequence.next_pattern
+                self._change_pattern(pattern)
 
             if isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
