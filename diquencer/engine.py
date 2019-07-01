@@ -3,9 +3,9 @@ from threading import Event, Thread
 from time import perf_counter, sleep
 
 from .events import MuteEvent, PatternEvent, StopEvent
+from .exceptions import ChangePatternError, InvalidBank
 from .midi_wrapper import Mute
 from .models import Position
-from .exceptions import InvalidBank, ChangePatternError
 
 
 class SequencerEngine(Thread):

@@ -1,10 +1,10 @@
 from typing import List, Union
 
 from .engine import SequencerEngine
+from .exceptions import SequenceNotSet, SequencerTransportError
 from .midi_wrapper import MIDIWrapper
 from .models import Pattern
 from .sequence import Sequence
-from .exceptions import SequencerTransportError, SequenceNotSet
 
 
 class Sequencer:

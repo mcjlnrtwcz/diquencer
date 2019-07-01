@@ -3,7 +3,7 @@ from enum import Enum
 import rtmidi
 from rtmidi.midiconstants import PROGRAM_CHANGE, SONG_START, SONG_STOP, TIMING_CLOCK
 
-from .exceptions import MIDIOutputError, InvalidBank
+from .exceptions import InvalidBank, MIDIOutputError
 
 
 class Mute(Enum):
