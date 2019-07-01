@@ -5,7 +5,7 @@ from time import perf_counter, sleep
 from .events import MuteEvent, PatternEvent, StopEvent
 from .midi_wrapper import Mute
 from .models import Position
-from .exceptions import InvalidBank
+from .exceptions import InvalidBank, ChangePatternError
 
 
 class SequencerEngine(Thread):
@@ -34,7 +34,13 @@ class SequencerEngine(Thread):
         if self._error_callback:
             self._error_callback(error)
 
-    def _change_pattern(self, pattern):
+    def _change_pattern(self, event):
+        pattern = event.pattern
+        try:
+            self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
+        except InvalidBank as error:
+            self._cleanup_after_abort(error)
+            raise ChangePatternError()
         logging.info(f"[{self.position}] Changing pattern to {pattern}.")
         self.current_pattern = pattern
         self.next_pattern = self._sequence.next_pattern
@@ -43,14 +49,10 @@ class SequencerEngine(Thread):
         logging.info(f"[{self.position}] Sequencer started.")
 
         # Set initial pattern
-        pattern_event = self._sequence.consume_event(self._pulsestamp)
-        pattern = pattern_event.pattern
         try:
-            self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
-        except InvalidBank as error:
-            self._cleanup_after_abort(error)
+            self._change_pattern(self, self._sequence.consume_event(self._pulsestamp))
+        except ChangePatternError:
             return
-        self._change_pattern(pattern)
 
         # Set initial playing tracks
         mute_event = self._sequence.consume_event(self._pulsestamp)
@@ -81,13 +83,10 @@ class SequencerEngine(Thread):
                 break
 
             if isinstance(event, PatternEvent):
-                pattern = event.pattern
                 try:
-                    self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
-                except InvalidBank as error:
-                    self._cleanup_after_abort(error)
+                    self._change_pattern(self, event)
+                except ChangePatternError:
                     return
-                self._change_pattern(pattern)
 
             if isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
