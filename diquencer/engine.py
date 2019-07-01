@@ -32,7 +32,7 @@ class SequencerEngine(Thread):
 
         # Set initial pattern
         try:
-            self._change_pattern(self, self._sequence.consume_event(self._pulsestamp))
+            self._change_pattern(self._sequence.consume_event(self._pulsestamp))
         except ChangePatternError:
             return
 
@@ -61,7 +61,7 @@ class SequencerEngine(Thread):
                 break
             elif isinstance(event, PatternEvent):
                 try:
-                    self._change_pattern(self, event)
+                    self._change_pattern(event)
                 except ChangePatternError:
                     return
             elif isinstance(event, MuteEvent):
