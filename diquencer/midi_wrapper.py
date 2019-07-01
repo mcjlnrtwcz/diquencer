@@ -57,7 +57,7 @@ class MIDIWrapper:
     def stop(self):
         self._midi_out.send_message([SONG_STOP])
 
-    def clock(self):
+    def tick(self):
         self._midi_out.send_message([TIMING_CLOCK])
 
     def mute(self, track: int, mute_state: Mute) -> None:

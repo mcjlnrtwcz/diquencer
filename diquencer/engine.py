@@ -61,9 +61,8 @@ class SequencerEngine(Thread):
             f"[{self.position}] Playing tracks: " f"{mute_event.playing_tracks}."
         )
 
-        # Warm-up
+        # Warm-up (4 quarter notes)
         for _ in range(24 * 4):
-            self._midi.clock()
             self._pulse()
 
         # Start
@@ -73,27 +72,21 @@ class SequencerEngine(Thread):
 
         # Consume events from queue
         while not self._stop_event.is_set():
-            self._midi.clock()
             self._pulse()
-
             event = self._sequence.consume_event(self._pulsestamp)
-
             if isinstance(event, StopEvent):
                 self.current_pattern = None
                 break
-
-            if isinstance(event, PatternEvent):
+            elif isinstance(event, PatternEvent):
                 try:
                     self._change_pattern(self, event)
                 except ChangePatternError:
                     return
-
-            if isinstance(event, MuteEvent):
+            elif isinstance(event, MuteEvent):
                 self._play_tracks(event.playing_tracks)
                 logging.info(
                     f"[{self.position}] Playing tracks: " f"{event.playing_tracks}."
                 )
-
             self._pulsestamp += 1
 
         self._midi.stop()
@@ -105,6 +98,7 @@ class SequencerEngine(Thread):
         self._stop_event.set()
 
     def _pulse(self):
+        self._midi.tick()
         start = perf_counter()
         while perf_counter() < start + self._pulse_duration:
             sleep(0.0001)
