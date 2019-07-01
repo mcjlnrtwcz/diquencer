@@ -27,6 +27,13 @@ class SequencerEngine(Thread):
     def position(self):
         return Position(self._pulsestamp)
 
+    def _cleanup_after_abort(self, error):
+        self._midi.stop()
+        self._sequence.reset()
+        logging.critical("Aborting sequencer engine.", exc_info=True)
+        if self._error_callback:
+            self._error_callback(error)
+
     def run(self):
         logging.info(f"[{self.position}] Sequencer started.")
 
@@ -36,9 +43,7 @@ class SequencerEngine(Thread):
         try:
             self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
         except InvalidBank as error:
-            self._sequence.reset()
-            logging.critical("Aborting sequencer engine.", exc_info=True)
-            self._error_callback(error)
+            self._cleanup_after_abort(error)
             return
         logging.info(f"[{self.position}] Changing pattern to {pattern}.")
 
@@ -78,10 +83,7 @@ class SequencerEngine(Thread):
                 try:
                     self._midi.change_pattern(pattern.bank_id, pattern.pattern_id)
                 except InvalidBank as error:
-                    self._midi.stop()
-                    self._sequence.reset()
-                    logging.critical("Aborting sequencer engine.", exc_info=True)
-                    self._error_callback(error)
+                    self._cleanup_after_abort(error)
                     return
                 logging.info(f"[{self.position}] Changing pattern to {pattern}.")
                 self.current_pattern = pattern
