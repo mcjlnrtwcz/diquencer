@@ -9,17 +9,17 @@ from .sequence import Sequence
 
 class Sequencer:
     def __init__(
-        self, sequence=None, midi_channel=1, start_callback=None, error_callback=None
+        self, midi_channel=1, start_callback=None, error_callback=None, sequence=None
     ):
         """
         When an error occurs, error_callback function will be execuded and exception
         will be passed as an argument.
         """
-        self._sequence = sequence
-        self._sequence_data = None
         self._midi = MIDIWrapper(midi_channel)
         self._start_callback = start_callback
         self._error_callback = error_callback
+        self._sequence = sequence
+        self._sequence_data = None
         self._engine = None
 
     @property
